@@ -1,0 +1,22 @@
+{
+  "schema_version": 3,
+  "integrity_check": "ok",
+  "foreign_key_violations": 0,
+  "counts": {
+    "categories": 8,
+    "products": 12,
+    "inventory": 12,
+    "inventory_movements": 18,
+    "customers": 5,
+    "sales": 5,
+    "sale_items": 6,
+    "payments": 5,
+    "returns": 1,
+    "return_items": 1,
+    "expenses": 3,
+    "customer_transactions": 5,
+    "audit_log": 2
+  },
+  "exchange_rate_lbp_per_usd": 89500,
+  "note": "All records and contact details are synthetic. Product images are embedded illustrative SVGs."
+}

@@ -1,0 +1,93 @@
+{
+  "name": "local-pos",
+  "version": "1.0.0",
+  "description": "Offline-first Windows desktop POS and store management for small local food shops",
+  "author": "Local POS",
+  "license": "UNLICENSED",
+  "private": true,
+  "main": "dist-electron/src/main/main.js",
+  "scripts": {
+    "dev": "concurrently -k -n VITE,ELECTRON -c blue,magenta \"npm:dev:vite\" \"npm:dev:electron\"",
+    "dev:vite": "vite",
+    "dev:electron": "wait-on tcp:5173 && tsc -p electron.tsconfig.json && tsc-alias -p electron.tsconfig.json && npm run build:preload && cross-env NODE_ENV=development electron .",
+     "build:renderer": "vite build",
+    "build:electron": "tsc -p electron.tsconfig.json && tsc-alias -p electron.tsconfig.json && npm run build:preload",
+    "build": "npm run build:renderer && npm run build:electron",
+    "preview": "vite preview",
+    "package:win": "npm run build && electron-builder --win --x64",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "build:preload": "esbuild src/preload/preload.ts --bundle --platform=node --format=cjs --external:electron --tsconfig=electron.tsconfig.json --outfile=dist-electron/src/preload/preload.js",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p electron.tsconfig.json",
+    "e2e": "npm run build && electron-builder --linux dir && node e2e/suite.cjs"
+  },
+  "dependencies": {
+    "better-sqlite3": "^13.0.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "decimal.js": "^10.4.3",
+    "drizzle-orm": "^0.45.4",
+    "electron-store": "^10.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^7.18.4",
+    "zustand": "^4.5.5"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.5.0",
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "concurrently": "^9.0.1",
+    "cross-env": "^7.0.3",
+    "drizzle-kit": "^0.28.0",
+    "electron": "44.7.0",
+    "electron-builder": "^26.15.3",
+    "esbuild": "^0.21.5",
+    "playwright-core": "^1.64.0",
+    "tsc-alias": "^1.9.7",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.1",
+    "vitest": "^2.0.5",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.localpos.app",
+    "productName": "Local POS",
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "resources/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "extraResources": [],
+    "asarUnpack": [
+      "**/*better-sqlite3*/**/*",
+      "**/better-sqlite3/**/*"
+    ],
+    "npmRebuild": false,
+    "nodeGypRebuild": false
+  },
+  "allowScripts": {
+    "better-sqlite3@13.0.3": true,
+    "esbuild@0.21.5": true,
+    "electron@44.7.0": true
+  }
+}

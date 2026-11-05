@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Fresh Chicken",
+    "name_ar": "دجاج طازج",
+    "file": "product_images/01_Fresh_Chicken.svg"
+  },
+  {
+    "id": 2,
+    "name": "Frozen Chicken",
+    "name_ar": "دجاج مجمد",
+    "file": "product_images/02_Frozen_Chicken.svg"
+  },
+  {
+    "id": 3,
+    "name": "Akkawi Cheese",
+    "name_ar": "جبنة عكاوي",
+    "file": "product_images/03_Akkawi_Cheese.svg"
+  },
+  {
+    "id": 4,
+    "name": "Whole Milk",
+    "name_ar": "حليب كامل الدسم",
+    "file": "product_images/04_Whole_Milk.svg"
+  },
+  {
+    "id": 5,
+    "name": "Local Labneh",
+    "name_ar": "لبنة بلدية",
+    "file": "product_images/05_Local_Labneh.svg"
+  },
+  {
+    "id": 6,
+    "name": "Hamour Fish",
+    "name_ar": "سمك هامور",
+    "file": "product_images/06_Hamour_Fish.svg"
+  },
+  {
+    "id": 7,
+    "name": "Shrimp",
+    "name_ar": "روبيان",
+    "file": "product_images/07_Shrimp.svg"
+  },
+  {
+    "id": 8,
+    "name": "Frozen Potato",
+    "name_ar": "بطاطا مجمدة",
+    "file": "product_images/08_Frozen_Potato.svg"
+  },
+  {
+    "id": 9,
+    "name": "Orange Juice",
+    "name_ar": "عصير برتقال",
+    "file": "product_images/09_Orange_Juice.svg"
+  },
+  {
+    "id": 10,
+    "name": "Canned Corn",
+    "name_ar": "ذرة معلبة",
+    "file": "product_images/10_Canned_Corn.svg"
+  },
+  {
+    "id": 11,
+    "name": "Mineral Water",
+    "name_ar": "ماء معدني",
+    "file": "product_images/11_Mineral_Water.svg"
+  },
+  {
+    "id": 12,
+    "name": "Inactive Sample",
+    "name_ar": "صنف غير نشط",
+    "file": "product_images/12_Inactive_Sample.svg"
+  }
+]

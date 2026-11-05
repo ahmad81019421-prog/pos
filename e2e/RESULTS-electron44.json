@@ -1,0 +1,112 @@
+[
+ {
+  "name": "01 first-run setup wizard (English)",
+  "ok": true,
+  "ms": 298
+ },
+ {
+  "name": "02 create products via UI (weight, piece, LBP, USD box)",
+  "ok": true,
+  "ms": 832
+ },
+ {
+  "name": "03 edit price via UI",
+  "ok": true,
+  "ms": 339
+ },
+ {
+  "name": "04 add stock via Inventory UI",
+  "ok": true,
+  "ms": 259
+ },
+ {
+  "name": "05 weight sale: 1.350 kg x $4.50 = $6.08, pay $10, change $3.92",
+  "ok": true,
+  "ms": 921
+ },
+ {
+  "name": "06 direct final price entry (1.000 kg, scale says $6.00)",
+  "ok": true,
+  "ms": 397
+ },
+ {
+  "name": "07 LBP-only: 87,300 owed -> 90,000 cash due; 87,300 paid is refused",
+  "ok": true,
+  "ms": 809
+ },
+ {
+  "name": "08 mixed currency: $10 invoice paid $5 + 447,500 LBP is exact",
+  "ok": true,
+  "ms": 521
+ },
+ {
+  "name": "09 change returned in LBP and in USD",
+  "ok": true,
+  "ms": 1123
+ },
+ {
+  "name": "10 insufficient stock: warning, add blocked, sale cannot proceed",
+  "ok": true,
+  "ms": 805
+ },
+ {
+  "name": "11 suspend, resume only into empty cart, banner",
+  "ok": true,
+  "ms": 356
+ },
+ {
+  "name": "12 duplicate submit: double-click Complete Sale creates one invoice",
+  "ok": true,
+  "ms": 890
+ },
+ {
+  "name": "13 empty cart shows no Complete Sale; payment button disabled with nothing paid",
+  "ok": true,
+  "ms": 401
+ },
+ {
+  "name": "14 invalid input is rejected with a friendly message",
+  "ok": true,
+  "ms": 698
+ },
+ {
+  "name": "15 returns UI: partial, partial again, then return the remainder",
+  "ok": true,
+  "ms": 813
+ },
+ {
+  "name": "16 expenses UI and profit report reconcile with the API",
+  "ok": true,
+  "ms": 1056
+ },
+ {
+  "name": "17 waste via UI appears in the waste report with its cost snapshot",
+  "ok": true,
+  "ms": 789
+ },
+ {
+  "name": "18 backup via UI, change data, restore via UI, data reverted",
+  "ok": true,
+  "ms": 3816
+ },
+ {
+  "name": "19 crash recovery: draft cart survives kill -9, restores once, no double sale",
+  "ok": true,
+  "ms": 5931
+ },
+ {
+  "name": "20 draft: discard clears it",
+  "ok": true,
+  "ms": 2637
+ },
+ {
+  "name": "21 Arabic RTL: switch language in Settings; layout checks and screenshots",
+  "ok": true,
+  "ms": 6610
+ },
+ {
+  "name": "22 switch back to English (LTR)",
+  "ok": true,
+  "ms": 666
+ }
+]

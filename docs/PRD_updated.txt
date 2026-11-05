@@ -1,0 +1,2461 @@
+POS PROJECT CONTEXT
+
+1. Project Overview
+
+Build a professional, offline-first Windows desktop POS and store management application for small and medium-sized local shops that primarily sell:
+
+- Chicken / poultry products
+- Cheese
+- Dairy products
+- Fish
+- Packaged food products
+- Other products that the shop owner may add manually
+
+The application is intended for shops that currently rely heavily on paper notebooks and manual calculations.
+
+The product must therefore prioritize:
+
+1. Simplicity
+2. Speed
+3. Reliability
+4. Very clear UX
+5. Minimal data entry
+6. Attractive professional appearance
+7. Offline operation
+8. Accurate financial calculations
+9. Easy installation and maintenance
+10. No unnecessary enterprise complexity
+
+This is NOT an ERP system and NOT a SaaS product.
+
+The software is sold as a one-time purchase and runs entirely on the customer's Windows computer.
+
+---
+
+2. Core Business Model
+
+The application is:
+
+- A Windows desktop application
+- Installed on one computer per shop
+- Completely local
+- No cloud database
+- No remote server
+- No online account
+- No internet dependency
+- No subscription
+- No multi-tenant architecture
+- No online synchronization
+
+The database is SQLite and resides locally on the customer's computer.
+
+The application must continue functioning normally if:
+
+- Internet is unavailable
+- Wi-Fi is unavailable
+- The computer has never been connected to the internet
+
+All normal POS operations must work offline.
+
+---
+
+3. Technology Stack
+
+Use the following technology stack unless there is a strong technical reason to change something.
+
+Desktop
+
+Electron
+
+Frontend
+
+React
+
+Language
+
+TypeScript
+
+Database
+
+SQLite
+
+Database access
+
+Use a reliable local SQLite library/ORM appropriate for Electron and production desktop applications.
+
+Prefer a strongly typed and maintainable database layer.
+
+Possible approach:
+
+- better-sqlite3 for reliable synchronous local SQLite access
+- Drizzle ORM if an ORM layer is useful
+
+Do not introduce unnecessary backend infrastructure.
+
+Architecture
+
+Recommended conceptual architecture:
+
+Electron Main Process
+        |
+        | IPC
+        v
+Application / Service Layer
+        |
+        v
+SQLite Data Layer
+        |
+        v
+Local SQLite Database
+
+Renderer:
+
+React
+  |
+  +-- UI Components
+  +-- Pages
+  +-- State Management
+  +-- Forms
+  +-- POS Interface
+
+Electron Main Process is responsible for privileged desktop functionality such as:
+
+- SQLite access
+- File system
+- Backup and restore
+- Printing
+- Application-level system operations
+- Secure IPC
+
+The React renderer must NOT directly access unrestricted Node.js APIs.
+
+Use secure Electron IPC with an appropriate preload layer.
+
+---
+
+4. Critical Architectural Rule
+
+Do NOT build this as:
+
+React -> direct unrestricted Node.js access
+
+Use:
+
+React Renderer
+      |
+      v
+Preload API
+      |
+      v
+Secure IPC
+      |
+      v
+Electron Main Process
+      |
+      +--> Database Service
+      +--> Backup Service
+      +--> Printing Service
+      +--> File Service
+
+Use context isolation and disable unnecessary Node integration in the renderer.
+
+The application must follow secure Electron architecture even though it is an offline application.
+
+---
+
+5. Product Philosophy
+
+The target customer is not a software engineer.
+
+Many target shop owners currently use:
+
+- Paper
+- Pen
+- Calculator
+- Manual weighing
+- Manual price calculation
+
+The software must not force them to radically change their workflow.
+
+The application should feel immediately understandable.
+
+The user should be able to:
+
+1. Open the application
+2. Find/select a product
+3. Enter weight or quantity
+4. See the calculated price
+5. Take payment
+6. Complete the sale
+
+with minimal interaction.
+
+Avoid unnecessary forms, dialogs, configuration screens, accounting terminology, and complicated workflows.
+
+---
+
+6. Main Application Navigation
+
+The application should open directly into the POS / Sales screen.
+
+Recommended main navigation:
+
+Sales
+Products
+Inventory
+Invoices
+Reports
+Expenses
+Settings
+Backup
+
+The exact visual design is flexible, but the application must maintain a clean hierarchy.
+
+The POS screen must always be the most prominent workflow.
+
+---
+
+7. First-Run Setup
+
+On the first launch, show a simple setup wizard.
+
+Example:
+
+Welcome
+
+Let's set up your shop.
+
+Shop Name
+Phone
+Address
+Default Currency
+Current USD/LBP Exchange Rate
+
+[Start Using POS]
+
+The setup should take approximately one minute.
+
+Do not require:
+
+- Email
+- Password
+- Online account
+- Internet
+- Cloud configuration
+
+After setup, the user goes directly to the POS screen.
+
+---
+
+8. Language Support
+
+The application must support:
+
+- Arabic
+- English
+
+Arabic must use proper RTL layout.
+
+English must use LTR layout.
+
+Language selection should be available from Settings.
+
+All UI text must be externalized/localized rather than hard-coded throughout components.
+
+The application must support:
+
+- Arabic labels
+- Arabic RTL layouts
+- English labels
+- Proper numeric formatting
+- Proper date formatting
+
+The UI should not become visually broken when switching languages.
+
+---
+
+9. Product System
+
+The shop owner must be able to create, edit, activate, and deactivate products.
+
+Products are not hard-coded.
+
+Example categories:
+
+- Chicken
+- Cheese
+- Dairy
+- Fish
+- Frozen
+- Canned / packaged food
+- Beverages
+- Other
+
+The owner can create additional categories.
+
+Products must support at least:
+
+Product Name
+Category
+Selling Unit
+Selling Price
+Price Currency
+Purchase Cost
+Active / Inactive
+Low Stock Threshold (optional)
+Image (optional)
+Notes (optional)
+
+Do not require images.
+
+Images may be used to make the POS visually attractive.
+
+---
+
+10. Product Units
+
+The system must support products sold using different units.
+
+At minimum:
+
+Weight-based
+
+Examples:
+
+- Chicken breast
+- Chicken thighs
+- Fish
+- Cheese
+- Labneh
+- Other products sold by weight
+
+Unit:
+
+KG
+
+Package / Box
+
+Examples:
+
+- Garlic
+- Packaged dairy
+- Other packaged goods
+
+Unit:
+
+BOX / PACKAGE
+
+Piece
+
+Examples:
+
+- Individual packaged products
+- Other products sold individually
+
+Unit:
+
+PIECE
+
+The product configuration determines its normal selling mode.
+
+---
+
+11. Weight-Based Selling
+
+Weight-based selling is one of the most important parts of the application.
+
+The application must support arbitrary decimal weights.
+
+Examples:
+
+1.250 kg
+1.350 kg
+0.875 kg
+2.700 kg
+
+Do not restrict the user to predefined increments.
+
+The weight should be entered exactly as needed.
+
+---
+
+12. Two Weight-Selling Workflows
+
+The system must support both of the following workflows.
+
+Workflow A — Weight × Unit Price
+
+Example:
+
+Product:
+Chicken Breast
+
+Price:
+$4.50 / KG
+
+Weight:
+1.350 KG
+
+Calculated Total:
+$6.075
+
+The system calculates the total automatically.
+
+The application must apply the configured currency precision/rounding rules.
+
+---
+
+Workflow B — Enter Final Price Directly
+
+Some shops use a digital scale that calculates the final selling price.
+
+The shop owner may already be accustomed to seeing something like:
+
+Weight = 1.350 KG
+Final Price = $6.08
+
+In this situation, the cashier must be able to enter the final price directly.
+
+The system must NOT force the cashier to repeat a calculation that the scale already performed.
+
+The sale record should preserve:
+
+- Product
+- Weight
+- Unit
+- Final price
+- Currency
+
+This workflow is critical.
+
+---
+
+13. Package / Piece Selling
+
+For non-weight products:
+
+Example:
+
+Garlic
+$2.00 / box
+
+Quantity:
+3
+
+Total:
+$6.00
+
+The user selects the product and enters the quantity.
+
+---
+
+14. Daily Pricing
+
+Product selling prices may change daily.
+
+The user must be able to update the current selling price quickly.
+
+Example:
+
+Yesterday:
+
+Chicken Breast
+$4.50 / KG
+
+Today:
+
+Chicken Breast
+$5.00 / KG
+
+New sales use the new price.
+
+Historical invoices MUST preserve the price that existed at the time of the sale.
+
+Changing a product's current price must never modify historical invoice totals.
+
+---
+
+15. Currency System
+
+The application supports:
+
+- USD
+- Lebanese Pound (LBP)
+
+Products may be priced in either currency.
+
+Do NOT assume all products are priced in USD.
+
+Example:
+
+Chicken Breast
+$4.50 / KG
+
+Another product may be:
+
+Cheese
+800,000 LBP / KG
+
+The product stores its selling currency.
+
+---
+
+16. Exchange Rate
+
+The application maintains a current USD/LBP exchange rate.
+
+Example:
+
+1 USD = 89,500 LBP
+
+The exchange rate can be changed by the shop owner.
+
+However:
+
+IMPORTANT:
+
+The exchange rate must NOT be displayed as an easily editable field on the main POS screen.
+
+It should be located inside Settings.
+
+The goal is to reduce accidental or unauthorized manipulation.
+
+Changing the exchange rate affects new calculations only.
+
+Historical transactions must retain the exchange rate used at the time of the transaction.
+
+---
+
+17. LBP Rounding
+
+Lebanese Pound cash calculations must support rounding to the nearest 5,000 LBP.
+
+Example:
+
+87,300 LBP
+
+becomes:
+
+90,000 LBP
+
+The rounding behavior must be implemented consistently throughout:
+
+- Product conversion
+- Payment
+- Change
+- Mixed currency calculations
+
+Do not use floating-point arithmetic for financial storage.
+
+Use integer-based minor units / precise decimal arithmetic where appropriate.
+
+---
+
+18. Financial Precision
+
+Do NOT use JavaScript floating-point arithmetic directly for monetary accounting.
+
+Money calculations must be deterministic.
+
+Recommended approach:
+
+- Store LBP as integer amounts.
+- Store USD using an appropriate fixed precision representation.
+- Use a decimal arithmetic library if needed.
+- Round only at clearly defined boundaries.
+
+All financial calculations must have automated tests.
+
+---
+
+19. Sales Screen
+
+The POS screen should be the main screen.
+
+Recommended layout:
+
++------------------------------------------------------+
+| Search                         Current Exchange Rate |
++----------------------+-------------------------------+
+| Categories           | Product Grid                  |
+|                      |                               |
+| Chicken              | [Chicken Breast]             |
+| Cheese               | [Chicken Thigh]              |
+| Dairy                | [Chicken Wings]              |
+| Fish                 | [Cheese]                     |
+| Frozen               | [Labneh]                     |
+| Other                | [Fish]                       |
++----------------------+-------------------------------+
+|                    Current Cart                      |
+| Product       Qty/Weight       Price       Total     |
+|------------------------------------------------------|
+| Chicken       1.350 KG         $4.50       $6.08     |
+| Cheese        2 BOX            $2.00       $4.00     |
+|------------------------------------------------------|
+| TOTAL                                            ... |
+|                                                    |
+|                 [ COMPLETE SALE ]                   |
++------------------------------------------------------+
+
+This is a conceptual layout only.
+
+The final UI should be modern, attractive, polished, and optimized for real-world speed.
+
+---
+
+20. POS Design Requirements
+
+The interface should look professional enough to impress a shop owner during a sales demonstration.
+
+However:
+
+DO NOT prioritize visual effects over usability.
+
+The design should communicate:
+
+- Reliability
+- Speed
+- Simplicity
+- Professionalism
+- Modernity
+
+Avoid:
+
+- Excessive animations
+- Unnecessary 3D
+- Decorative UI that slows down workflow
+- Tiny buttons
+- Overloaded dashboards
+
+The POS should work well with:
+
+- Mouse
+- Keyboard
+- Touch screen
+
+---
+
+21. Product Search
+
+Search must be fast.
+
+The user should be able to search by:
+
+- Product name
+- Partial product name
+- Possibly category
+
+Search must support Arabic and English product names.
+
+---
+
+22. Quick Product Selection
+
+The POS should display products as large, easy-to-understand buttons/cards.
+
+For example:
+
++----------------+
+|                |
+|     IMAGE      |
+|                |
+| Chicken Breast |
+| $4.50 / KG     |
++----------------+
+
+Images are optional.
+
+If no image exists, use a clean placeholder.
+
+---
+
+23. Cart
+
+The cart must show:
+
+- Product name
+- Quantity or weight
+- Unit price
+- Currency
+- Total
+- Ability to edit quantity/weight
+- Ability to remove item
+
+The user must be able to correct an item before payment.
+
+---
+
+24. Suspended Invoice
+
+There must be support for ONE suspended invoice.
+
+Example:
+
+Customer A is deciding what to buy.
+
+The cashier suspends the current invoice.
+
+Customer B arrives.
+
+The cashier starts a new sale for Customer B.
+
+After Customer B finishes, Customer A returns.
+
+The cashier opens the suspended invoice and continues editing it.
+
+Only one suspended invoice is required.
+
+Do not implement a complex queue system.
+
+---
+
+25. Payment
+
+The primary payment method is cash.
+
+The system must support:
+
+- USD cash
+- LBP cash
+- Mixed currency payment where useful
+
+Example:
+
+Invoice:
+
+$10
+
+Customer pays:
+
+$5
++
+447,500 LBP
+
+At an exchange rate of:
+
+89,500 LBP / USD
+
+the total payment equals $10.
+
+The system must calculate this accurately.
+
+---
+
+26. Change
+
+The cashier must be able to choose the currency of change.
+
+Example:
+
+Invoice:
+
+$10
+
+Customer pays:
+
+$20 USD
+
+Change options:
+
+$10 USD
+
+or:
+
+Equivalent LBP according to current exchange rate
+
+The UI should make both options obvious.
+
+Example:
+
+Change:
+[ Return in USD ]
+[ Return in LBP ]
+
+The system calculates the equivalent amount automatically.
+
+---
+
+27. Payment UX
+
+The payment dialog should be extremely simple.
+
+Example:
+
+TOTAL
+
+$10.00
+
+Customer pays:
+[ 20.00 ] USD
+
+Change:
+$10.00
+
+Return:
+( ) USD
+( ) LBP
+
+[ COMPLETE SALE ]
+
+Do not make the cashier navigate through complicated accounting screens.
+
+---
+
+28. Customers / Credit
+
+The system may support a simple customer account for credit/debt.
+
+This feature must remain simple.
+
+Customer record:
+
+Name
+Phone (optional)
+Balance
+Notes
+
+Do not build a complicated CRM.
+
+If credit is used:
+
+- Record the sale
+- Record outstanding balance
+- Allow payment toward balance
+- Show customer balance
+
+The feature must remain optional.
+
+---
+
+29. Inventory
+
+Inventory must update automatically.
+
+Example:
+
+Initial stock:
+
+100 KG Chicken Breast
+
+Sale:
+
+1.350 KG
+
+New stock:
+
+98.650 KG
+
+Inventory must reflect sales automatically.
+
+---
+
+30. Stock Addition
+
+Do NOT create a complicated purchasing/accounting module.
+
+Use a simple "Add Stock" workflow.
+
+Example:
+
+Product:
+Chicken Breast
+
+Quantity:
+50 KG
+
+Purchase Cost:
+$3.50 / KG
+
+[ ADD STOCK ]
+
+The operation increases inventory and records the purchase cost.
+
+---
+
+31. Purchase Cost
+
+Each stock addition may include a purchase cost.
+
+Example:
+
+50 KG
+$3.50 / KG
+
+This information is used for profit calculation.
+
+Historical cost information must not be overwritten when the new purchase cost changes.
+
+---
+
+32. Profit
+
+The system should calculate:
+
+- Sales revenue
+- Cost of goods sold
+- Gross profit
+- Expenses
+- Net profit
+
+Example:
+
+Sales:
+$800
+
+Cost:
+$500
+
+Gross Profit:
+$300
+
+Expenses:
+$50
+
+Net Profit:
+$250
+
+Profit calculations must use historical transaction data.
+
+---
+
+33. Inventory Complexity
+
+Do NOT implement advanced inventory accounting.
+
+The target customer is a small shop.
+
+Avoid:
+
+- Multi-warehouse
+- Stock transfers
+- Batch management
+- Lot tracking
+- Advanced FIFO/LIFO interfaces
+- Complex purchase orders
+- Multi-location stock
+
+The system should provide practical stock tracking only.
+
+---
+
+34. Low Stock
+
+Low stock warnings are optional per product.
+
+A product may have:
+
+Minimum Stock:
+10 KG
+
+If the current stock drops below that level, show a simple warning.
+
+If no threshold is configured, do not show a warning.
+
+Do not make low-stock management mandatory.
+
+---
+
+35. Stocktake / Inventory Count
+
+Do NOT implement a complex inventory-counting workflow in V1.
+
+A simple stock adjustment capability may exist if required for correcting obvious discrepancies, but it should not become a major workflow.
+
+---
+
+36. Waste / Damaged Stock
+
+The system must support recording damaged/wasted stock.
+
+Example:
+
+Product:
+Labneh
+
+Quantity:
+2 KG
+
+Reason:
+Expired
+
+[ RECORD WASTE ]
+
+Possible reasons:
+
+- Expired
+- Damaged
+- Spoiled
+- Other
+
+Waste must reduce inventory.
+
+Waste must be visible in reports.
+
+---
+
+37. Returns
+
+Support both:
+
+Full invoice return
+
+Return the complete invoice.
+
+Partial return
+
+Return only selected products/quantities.
+
+Example:
+
+Original:
+
+Cheese
+2 KG
+
+Return:
+
+0.500 KG
+
+The system must calculate the refund correctly.
+
+Inventory should be updated appropriately.
+
+Returned amounts must be recorded separately from normal sales.
+
+---
+
+38. Invoice Editing
+
+Before payment:
+
+The cashier can freely edit the current invoice.
+
+After payment:
+
+The system should use controlled correction/return behavior rather than silently changing historical financial records.
+
+Historical transactions must remain auditable.
+
+Do not silently mutate old financial records.
+
+---
+
+39. Expenses
+
+Include a simple expense module.
+
+Examples:
+
+- Electricity
+- Water
+- Rent
+- Transportation
+- Maintenance
+- Other
+
+Expense record:
+
+Date
+Description
+Amount
+Currency
+Category
+Notes
+
+Expenses contribute to net profit reports.
+
+---
+
+40. Reports
+
+Include practical reports:
+
+Sales
+
+- Today
+- Yesterday
+- This week
+- This month
+- Custom date range
+
+Products
+
+- Best-selling products
+- Sales by product
+- Sales by category
+
+Inventory
+
+- Current stock
+- Low stock
+- Stock additions
+- Waste
+
+Financial
+
+- Revenue
+- Cost
+- Gross profit
+- Expenses
+- Net profit
+
+Invoices
+
+- Completed invoices
+- Suspended invoice
+- Returns
+
+Customers
+
+- Customer balances
+- Credit/debt transactions if the feature is enabled
+
+Reports must remain understandable to a small-shop owner.
+
+---
+
+41. Dashboard
+
+The application opens to POS, NOT a dashboard.
+
+A separate dashboard/report view may show:
+
+Today's Sales
+Today's Cost
+Gross Profit
+Expenses
+Net Profit
+Number of Sales
+
+Do not overload the POS screen with accounting information.
+
+---
+
+42. Invoices
+
+Each completed sale receives a unique invoice number.
+
+The invoice should contain:
+
+- Shop name
+- Optional phone
+- Optional address
+- Invoice number
+- Date/time
+- Products
+- Quantity/weight
+- Unit price
+- Line totals
+- Subtotal
+- Discount if supported later
+- Total
+- Payment currency
+- Payment amount
+- Change
+- Exchange rate when relevant
+
+---
+
+43. Printing
+
+The application must work perfectly without a printer.
+
+If the shop has no printer:
+
+Sale works normally.
+
+If the shop later installs a compatible printer:
+
+Settings -> Printer
+
+The application can print receipts.
+
+Support a common thermal receipt printer format, preferably 80mm.
+
+58mm support can be considered if technically practical.
+
+Do not require the user to have a printer.
+
+Do not require phone printing.
+
+---
+
+44. Printing Architecture
+
+Printing must be isolated behind a service.
+
+Example:
+
+PrintingService
+    |
+    +-- Detect printer
+    +-- Test print
+    +-- Print receipt
+
+The POS must not crash if:
+
+- No printer exists
+- Printer is disconnected
+- Printer is unavailable
+- Printing fails
+
+The sale should remain safely stored even if printing fails.
+
+---
+
+45. Backup
+
+Because the application uses local SQLite, backup is critical.
+
+Implement automatic backups.
+
+Recommended behavior:
+
+- Automatically create a backup at least daily.
+- Keep multiple recent backups.
+- Avoid overwriting the only backup.
+- Store backups in a dedicated application data directory.
+- Allow manual backup.
+- Allow backup to USB/external folder.
+
+Example:
+
+Backups/
+    backup-2026-10-01.db
+    backup-2026-10-02.db
+    backup-2026-10-03.db
+
+The exact retention count may be configurable.
+
+---
+
+46. Restore
+
+Provide a simple restore workflow.
+
+The user selects a backup and confirms:
+
+Restore this backup?
+
+Current data will be replaced.
+
+[ Cancel ]
+[ Restore ]
+
+Before restoring, create a safety backup of the current database.
+
+Never destroy the current database without creating a recovery point.
+
+---
+
+47. Database Location
+
+Do NOT store the production database inside the application installation directory.
+
+Use the operating system's appropriate application-data directory.
+
+Conceptually:
+
+Application Installation
+    -> Program Files / application binaries
+
+Application Data
+    -> SQLite database
+    -> backups
+    -> configuration
+    -> logs
+
+This is important for Windows permissions and application updates.
+
+---
+
+48. Database Safety
+
+SQLite must use transactions for operations that modify multiple related records.
+
+Example sale transaction:
+
+Create Invoice
++
+Create Invoice Items
++
+Reduce Inventory
++
+Record Payment
++
+Record Cost
++
+Commit
+
+Either all operations succeed or none of them should be committed.
+
+The system must prevent partially saved sales.
+
+---
+
+49. Suggested Database Entities
+
+The exact schema can be refined during implementation, but conceptually the database should contain entities such as:
+
+app_settings
+shop_settings
+categories
+products
+inventory
+inventory_movements
+sales
+sale_items
+payments
+returns
+return_items
+expenses
+customers
+customer_transactions
+suspended_sale
+exchange_rate_history
+backups / backup metadata if needed
+audit_log
+
+Do not create unnecessary tables.
+
+The schema must be normalized enough to preserve historical accuracy.
+
+---
+
+50. Historical Data Rule
+
+Historical invoices must never change because a current setting changes.
+
+Examples:
+
+Changing:
+
+- Product price
+- Exchange rate
+- Product name
+- Product category
+- Purchase cost
+
+must NOT rewrite historical transaction values.
+
+Sale items must store the relevant historical values required to reconstruct the transaction.
+
+---
+
+51. Product Deletion
+
+Do not physically delete a product that has historical transactions.
+
+Instead:
+
+Active = false
+
+Inactive products:
+
+- Do not appear in normal POS product selection.
+- Remain available in historical reports.
+- Preserve old invoices.
+
+---
+
+52. Auditability
+
+Even though this is a simple system, important financial actions should be traceable.
+
+At minimum, consider recording:
+
+- Sale creation
+- Sale cancellation/return
+- Inventory adjustment
+- Waste
+- Expense creation
+- Exchange rate changes
+- Settings changes
+
+Do not build a complicated enterprise audit system.
+
+The goal is simply to prevent confusing unexplained changes.
+
+---
+
+53. Security
+
+This is an offline desktop application.
+
+Do not add unnecessary authentication systems.
+
+However:
+
+- Protect IPC boundaries.
+- Validate all input.
+- Use parameterized SQL.
+- Do not concatenate SQL strings from user input.
+- Protect filesystem operations.
+- Avoid exposing Node.js APIs to the renderer.
+- Validate monetary values.
+- Validate quantities and weights.
+- Prevent negative or impossible values unless explicitly allowed.
+- Handle database errors safely.
+
+---
+
+54. No Internet Requirement
+
+The production application must NOT depend on:
+
+- API calls
+- Cloud authentication
+- Remote databases
+- Firebase
+- Supabase
+- Web APIs
+- Online licensing
+- Online exchange rates
+- Remote analytics
+- Internet-based printing
+
+The exchange rate is entered manually by the shop owner.
+
+The application must work completely offline.
+
+---
+
+55. Installation / Distribution
+
+The final product must be packaged as a Windows installer.
+
+Conceptually:
+
+Source Code
+    ↓
+Build React + TypeScript
+    ↓
+Build Electron application
+    ↓
+Package Windows application
+    ↓
+POS-Setup.exe
+
+The customer should not need:
+
+- Node.js
+- npm
+- React
+- TypeScript
+- SQLite CLI
+- Developer tools
+
+The customer simply installs the application.
+
+---
+
+56. Application Updates
+
+There is no online auto-update system in V1.
+
+Updates may be distributed manually as a new Windows installer.
+
+A future installer must preserve the customer's existing database.
+
+Database migrations must be designed so that future application versions can upgrade the schema safely.
+
+Never overwrite the customer's database during a normal application update.
+
+---
+
+57. Error Handling
+
+The application must never silently lose a sale.
+
+If an error occurs:
+
+- Show a clear human-readable message.
+- Preserve already saved data.
+- Avoid duplicate transactions.
+- Log technical details locally.
+- Do not expose raw stack traces to the customer.
+
+Example:
+
+Instead of:
+
+SQLITE_CONSTRAINT_FOREIGNKEY
+
+show:
+
+Something went wrong while saving the sale.
+Your data was not changed.
+Please try again.
+
+Technical logs may contain the underlying error.
+
+---
+
+58. POS Performance
+
+The POS must feel instant on normal low-end Windows computers.
+
+The target environment may contain older hardware.
+
+Avoid:
+
+- Huge bundles
+- Unnecessary background processes
+- Heavy animations
+- Continuous expensive database queries
+- Memory leaks
+
+SQLite queries should be indexed appropriately.
+
+---
+
+59. UI Requirements
+
+The visual style should be:
+
+- Modern
+- Clean
+- Professional
+- Attractive
+- Commercial
+- Easy to understand
+- Suitable for Arabic RTL
+- Responsive within the desktop window
+
+Use:
+
+- Strong visual hierarchy
+- Large touch-friendly controls
+- Clear totals
+- High contrast
+- Consistent spacing
+- Clear success/error states
+- Modern cards where useful
+- Meaningful icons
+
+Do not create a generic admin dashboard template.
+
+This is a POS product.
+
+---
+
+60. Accessibility / Usability
+
+The application should support:
+
+- Clear readable typography
+- Large primary buttons
+- Keyboard navigation where practical
+- Visible focus states
+- Avoid tiny click targets
+- Clear confirmation for destructive operations
+- Clear error messages
+
+The most important operations should require minimal clicks.
+
+---
+
+61. Product Images
+
+Product images are optional.
+
+If an image exists, show it on the product card.
+
+If not, display a visually consistent placeholder.
+
+Images must not be required for creating a product.
+
+---
+
+62. Keyboard Support
+
+Full keyboard-first optimization is NOT required in V1.
+
+However, common actions should have sensible shortcuts where they improve productivity.
+
+Do not spend excessive development time on shortcuts before core functionality is complete.
+
+---
+
+63. Features Explicitly Out of Scope
+
+Do NOT implement the following unless explicitly requested later:
+
+- Cloud database
+- Online sync
+- Multi-tenant SaaS
+- Subscription system
+- Online payments
+- Employee management
+- Complex permissions
+- Payroll
+- Tax system
+- Advanced accounting
+- Multi-warehouse
+- Multi-branch
+- Advanced CRM
+- Complex supplier management
+- Barcode requirement
+- Barcode generation
+- Electronic scale integration
+- Complex recipe/composite products
+- Meat inventory
+- Batch/lot tracking
+- Complex expiry management
+- Online exchange-rate API
+- Mobile application
+- Web application
+- Customer-facing website
+- Online ordering
+- Delivery management
+
+The application should remain focused.
+
+---
+
+64. Important Business Edge Cases
+
+The implementation must consider:
+
+Weight
+
+0.001 KG
+1.250 KG
+10.750 KG
+
+Zero/negative quantity
+
+Reject invalid values.
+
+Zero/negative price
+
+Reject invalid values unless explicitly required for special cases.
+
+Price changes
+
+Historical invoices remain unchanged.
+
+Exchange rate changes
+
+Historical transactions remain unchanged.
+
+Printer unavailable
+
+Sale still succeeds.
+
+Backup failure
+
+Notify the user without breaking normal POS operation.
+
+Database error
+
+Do not partially commit a transaction.
+
+Application crash during sale
+
+Use SQLite transactions so incomplete sales are not left in an inconsistent state.
+
+Return greater than original sold quantity
+
+Reject it.
+
+Suspended sale
+
+Only one suspended sale is allowed.
+
+Product inactive
+
+It cannot be selected for new sales but remains visible in historical records.
+
+---
+
+65. Suggested Main Screens
+
+1. POS / Sales
+
+Primary application screen.
+
+2. Products
+
+- Categories
+- Product list
+- Add product
+- Edit product
+- Activate/deactivate
+- Current price
+- Cost
+- Unit
+
+3. Inventory
+
+- Current quantities
+- Add stock
+- Stock movements
+- Waste
+- Low stock
+
+4. Invoices
+
+- Completed sales
+- Search
+- View invoice
+- Return
+
+5. Reports
+
+- Sales
+- Products
+- Inventory
+- Profit
+- Expenses
+
+6. Expenses
+
+- Add expense
+- View expenses
+
+7. Settings
+
+- Shop information
+- Language
+- Currency
+- Exchange rate
+- Printer
+- Receipt settings
+- Backup settings
+
+8. Backup
+
+- Create backup
+- Restore backup
+- Backup location
+- USB backup
+
+---
+
+66. Product Creation UX
+
+Adding a product should be quick.
+
+Example:
+
+Product Name
+Category
+Selling Type:
+    Weight
+    Package
+    Piece
+
+Current Price
+Currency
+
+Purchase Cost
+Low Stock Alert (optional)
+
+[ Save Product ]
+
+Do not require unnecessary fields.
+
+---
+
+67. Add Stock UX
+
+Example:
+
+Product
+Quantity
+Unit
+Purchase Cost
+Currency
+
+[ Add Stock ]
+
+After saving:
+
+Stock updated successfully.
+
+---
+
+68. Sale Workflow
+
+Normal sale:
+
+Open POS
+    ↓
+Select category
+    ↓
+Select product
+    ↓
+Enter weight/quantity
+    ↓
+System calculates price
+    ↓
+Add to cart
+    ↓
+Repeat if necessary
+    ↓
+Complete Sale
+    ↓
+Payment
+    ↓
+Calculate change
+    ↓
+Save transaction
+    ↓
+Update inventory
+    ↓
+Print if enabled
+    ↓
+Return to empty POS
+
+---
+
+69. Suspended Sale Workflow
+
+Current sale
+    ↓
+Suspend
+    ↓
+Start new sale
+    ↓
+Complete second customer
+    ↓
+Return to suspended sale
+    ↓
+Continue editing
+    ↓
+Complete
+
+---
+
+70. Return Workflow
+
+Invoices
+    ↓
+Search invoice
+    ↓
+Open invoice
+    ↓
+Choose:
+    Full Return
+    Partial Return
+    ↓
+Select quantity if partial
+    ↓
+Calculate refund
+    ↓
+Confirm
+    ↓
+Update inventory
+    ↓
+Record return
+
+---
+
+71. Reporting Philosophy
+
+Reports should answer practical questions:
+
+- How much did I sell today?
+- How much did I make?
+- Which products sell the most?
+- What stock do I have?
+- What was wasted?
+- What did I spend?
+- How much profit did I make?
+- What sales happened today?
+
+Avoid accounting jargon.
+
+---
+
+72. Testing Requirements
+
+Do not consider the project complete merely because the UI works.
+
+Test at minimum:
+
+Product
+
+- Create
+- Edit
+- Deactivate
+- Reactivate
+
+Sales
+
+- Weight product
+- Package product
+- Piece product
+- Multiple products
+- Price changes
+- Currency changes
+
+Currency
+
+- USD sale
+- LBP sale
+- USD payment
+- LBP payment
+- Mixed payment
+- USD change
+- LBP change
+- Exchange-rate conversion
+- 5,000 LBP rounding
+
+Inventory
+
+- Add stock
+- Sell stock
+- Waste
+- Return
+- Insufficient stock behavior
+
+Financial
+
+- Cost calculation
+- Gross profit
+- Expenses
+- Net profit
+
+Backup
+
+- Create backup
+- Restore backup
+- Backup after restore
+- Backup failure handling
+
+Printing
+
+- Printer available
+- Printer unavailable
+- Print failure
+
+Localization
+
+- Arabic RTL
+- English LTR
+- Long Arabic product names
+- Long English product names
+
+---
+
+73. Automated Financial Test Examples
+
+The project must include tests for important financial calculations.
+
+Example:
+
+Price = $4.50 / KG
+Weight = 1.350 KG
+Expected = $6.075 before configured rounding
+
+Example:
+
+Exchange Rate = 89,500 LBP/USD
+USD = $10
+Expected LBP equivalent = 895,000 LBP
+
+Example:
+
+Invoice = $10
+Paid = $20
+Change = $10
+
+Example:
+
+Invoice = $10
+Paid = $20 USD
+Change returned in LBP
+Exchange Rate = 89,500
+Expected Change = 895,000 LBP
+
+Example:
+
+LBP amount requiring rounding
+87,300
+Expected cash amount = 90,000
+
+The exact final rounding policy must be centralized and tested.
+
+---
+
+74. Database Integrity
+
+Use foreign keys where appropriate.
+
+Use transactions for:
+
+- Sale creation
+- Return creation
+- Stock addition
+- Waste
+- Financial operations
+
+Use indexes for frequently searched fields.
+
+Do not store derived data unnecessarily if it can create inconsistency, unless there is a clear performance reason.
+
+---
+
+75. Code Quality
+
+The codebase must be:
+
+- TypeScript-first
+- Strongly typed
+- Modular
+- Maintainable
+- Easy to extend
+- Easy to debug
+
+Avoid:
+
+- Giant components
+- Giant files
+- Duplicate business logic
+- Business rules inside UI components
+- Direct database calls from React components
+- Hard-coded Arabic/English strings
+- Hard-coded currency calculations
+- Magic numbers
+
+Business logic should live in services/domain modules.
+
+---
+
+76. Recommended Conceptual Project Structure
+
+A possible structure:
+
+src/
+  main/
+    main.ts
+    ipc/
+    services/
+      database/
+      inventory/
+      sales/
+      payments/
+      reports/
+      backup/
+      printing/
+      settings/
+
+  preload/
+    preload.ts
+
+  renderer/
+    app/
+    components/
+    pages/
+      pos/
+      products/
+      inventory/
+      invoices/
+      reports/
+      expenses/
+      settings/
+      backup/
+    hooks/
+    stores/
+    services/
+    i18n/
+    styles/
+
+  shared/
+    types/
+    constants/
+    validation/
+    money/
+
+This is conceptual, not mandatory.
+
+The final structure should remain simple enough for a solo developer to maintain.
+
+---
+
+77. State Management
+
+Use a predictable state-management strategy.
+
+Do not introduce a large state-management framework unless needed.
+
+Separate:
+
+- UI state
+- POS/cart state
+- Persistent application state
+- Database state
+
+The cart must be safe from accidental loss.
+
+---
+
+78. Validation
+
+All user input must be validated.
+
+Examples:
+
+Product:
+
+- Name required
+- Valid category
+- Valid unit
+- Positive price
+
+Weight:
+
+- Positive decimal
+- Reasonable precision
+
+Quantity:
+
+- Positive
+
+Exchange rate:
+
+- Positive
+
+Expense:
+
+- Positive amount
+
+Return:
+
+- Cannot exceed original sold quantity
+
+---
+
+79. Important Principle: Do Not Overengineer
+
+The project is intentionally designed for a low-cost local POS product.
+
+If two implementations are possible:
+
+Choose the simpler reliable implementation unless the more complex solution provides a real customer benefit.
+
+Do not add architecture merely because it is technically impressive.
+
+---
+
+80. Agent Development Rules
+
+The AI development agent MUST follow these rules.
+
+Rule 1
+
+Read and understand this entire context before modifying the project.
+
+Rule 2
+
+Inspect the existing project before creating or replacing files.
+
+Rule 3
+
+Do not rewrite working functionality unnecessarily.
+
+Rule 4
+
+Do not add features that are explicitly out of scope.
+
+Rule 5
+
+Do not introduce cloud/server infrastructure.
+
+Rule 6
+
+Do not introduce internet dependencies.
+
+Rule 7
+
+Do not expose unrestricted Node.js APIs to React.
+
+Rule 8
+
+Do not place business logic directly inside UI components.
+
+Rule 9
+
+Use database transactions for critical operations.
+
+Rule 10
+
+Preserve historical financial data.
+
+Rule 11
+
+Every major feature must be tested.
+
+Rule 12
+
+Do not claim a feature is complete until its workflow has been tested.
+
+Rule 13
+
+When uncertain about a business rule, do not invent a complex solution. Prefer the simplest behavior consistent with this context.
+
+Rule 14
+
+Do not silently change existing business rules.
+
+Rule 15
+
+Maintain Arabic RTL and English LTR throughout the application.
+
+Rule 16
+
+The UI must remain usable on lower-end Windows computers.
+
+Rule 17
+
+Never sacrifice financial correctness for visual appearance.
+
+---
+
+81. Development Strategy
+
+Build the application incrementally.
+
+Recommended order:
+
+Phase 1
+
+Project foundation:
+
+- Electron
+- React
+- TypeScript
+- SQLite
+- Secure IPC
+- Database initialization
+- Settings
+- Localization
+
+Phase 2
+
+Product system:
+
+- Categories
+- Products
+- Units
+- Pricing
+- Activation/deactivation
+
+Phase 3
+
+POS:
+
+- Product selection
+- Cart
+- Weight input
+- Direct final price input
+- Package/piece quantities
+
+Phase 4
+
+Currency/payment:
+
+- USD
+- LBP
+- Exchange rate
+- Mixed payment
+- Change calculation
+- Rounding
+
+Phase 5
+
+Inventory:
+
+- Stock
+- Add stock
+- Automatic deduction
+- Cost tracking
+- Waste
+- Low stock
+
+Phase 6
+
+Invoices:
+
+- Invoice history
+- Suspended invoice
+- Returns
+- Partial returns
+
+Phase 7
+
+Reports:
+
+- Sales
+- Inventory
+- Profit
+- Expenses
+
+Phase 8
+
+Printing:
+
+- Printer settings
+- Receipt layout
+- Test printing
+- Print failure handling
+
+Phase 9
+
+Backup:
+
+- Automatic backup
+- Manual backup
+- USB backup
+- Restore
+
+Phase 10
+
+Polish:
+
+- Arabic RTL
+- English LTR
+- UX refinement
+- Error handling
+- Performance
+- Testing
+- Packaging
+
+---
+
+82. Acceptance Criteria
+
+The project is considered ready for real customer use only when:
+
+1. The application runs completely offline.
+2. SQLite works reliably.
+3. A new shop can be configured through first-run setup.
+4. Products can be created without developer intervention.
+5. Products can use KG, package, or piece units.
+6. Weight sales support arbitrary decimal weights.
+7. The cashier can enter a final price directly when needed.
+8. Daily product prices can be changed.
+9. Historical invoices preserve old prices.
+10. USD and LBP are supported.
+11. Products can be priced in either currency.
+12. Exchange rate can be changed from Settings.
+13. Exchange-rate history is preserved where needed for transaction reconstruction.
+14. LBP rounding works consistently.
+15. Cash payment works.
+16. Mixed-currency payment works.
+17. Change can be returned in USD or LBP.
+18. Inventory updates automatically.
+19. Stock can be added manually.
+20. Purchase cost is recorded.
+21. Profit calculations are correct.
+22. Waste can be recorded.
+23. Full and partial returns work.
+24. One invoice can be suspended.
+25. Expenses work.
+26. Reports work.
+27. Printing is optional.
+28. The application works normally without a printer.
+29. Automatic backups work.
+30. Restore works safely.
+31. The application does not depend on internet access.
+32. Arabic RTL works correctly.
+33. English LTR works correctly.
+34. The application can be packaged into a Windows installer.
+35. Updating the application does not destroy the existing database.
+36. Critical workflows have automated tests.
+37. The application does not lose or duplicate financial transactions.
+38. The application remains understandable to a shop owner who previously used paper and pen.
+
+---
+
+83. Final Product Definition
+
+This product is a:
+
+«Simple, attractive, reliable, offline Windows POS system for small local food shops, especially chicken, cheese, dairy, and fish shops.»
+
+Its competitive advantages should be:
+
+- Very easy to learn
+- Very fast to operate
+- Works completely offline
+- No monthly subscription
+- No internet requirement
+- Supports USD and LBP
+- Supports weight-based sales
+- Supports direct final-price entry from the shop's existing scale workflow
+- Automatic inventory
+- Basic profit tracking
+- Optional receipt printing
+- Automatic backup
+- Modern professional interface
+
+The product must feel like a practical tool for a real shop, not an enterprise accounting system.
+
+---
+
+84. Final Instruction to the AI Developer
+
+Before writing substantial code:
+
+1. Read this entire context.
+2. Inspect the current project/repository.
+3. Identify what already exists.
+4. Create or update the technical architecture.
+5. Create the SQLite schema and migration strategy.
+6. Explain the implementation plan briefly.
+7. Then implement incrementally.
+
+Do not attempt to hide incomplete functionality behind UI.
+
+If a button exists, it must work.
+
+If a workflow is not implemented, do not present it as completed.
+
+After each major phase:
+
+- Run the application.
+- Test the workflow.
+- Run automated tests.
+- Fix errors.
+- Check Arabic RTL.
+- Check financial calculations.
+- Check database integrity.
+
+At the end, perform a full product audit against every requirement in this document.
+
+The final result must be a production-ready Windows desktop POS application that can be installed on a shop computer and used without internet access.
+
+----- ADDENDUM (hardening decisions) -----
+
+# PRD ADDENDUM — decisions resolved during hardening (applies on top of PRD §1–84)
+
+Each item cites the PRD text it is derived from. Items marked **NEEDS OWNER APPROVAL** are implemented in the most conservative reading and are listed again in RELEASE_READINESS.md.
+
+## 85. LBP rounding (clarifies §17, §25–27)
+Four different numbers are kept apart everywhere (service, payment dialog, receipt, reports):
+1. **Amount owed (exact)** – invoice total as stored; never rounded. Reports use only this.
+2. **Cash due in LBP** – shown only for LBP-only tenders: the exact LBP-equivalent rounded **up** to the next 5,000 (87,300 → 90,000, the §17 example). Payments that include any USD are compared **exactly**, so no customer is overcharged by a rounding they did not choose.
+3. **Amount received** – what the customer handed over, stored as entered (USD cents + LBP).
+4. **Change** – USD change is floored to whole cents; LBP change is rounded up to the next 5,000 (**NEEDS OWNER APPROVAL**: favours the customer; the PRD only specifies the 87,300 → 90,000 example).
+Debt/credit is always measured against the exact amount owed. Rounding is never applied to stored totals, cost, profit or reports.
+
+## 86. Selling beyond recorded stock (§29, §64) — rule D3
+A sale can **never** take stock below zero. The POS warns before it happens (product dialog shows available/requested including what is already in the cart; "Complete Sale" is disabled while the cart exceeds stock) and the server refuses it atomically. The owner fixes the stock first (Add Stock / Adjust). Rationale: simplest consistent rule, keeps stock movements and cost reports trustworthy.
+
+## 87. Waste and profit (§36, §32, §50) — rule D5
+Waste records quantity, reason (Expired/Damaged/Spoiled/Other) and a **cost snapshot at the time of waste** (USD cents). Net profit = gross profit − expenses − waste cost. Waste is not part of COGS, so it is deducted exactly once. Later cost or rate changes never alter historical waste. Waste on a product with no recorded cost counts as $0.00 and is flagged "cost not recorded".
+
+## 88. Resolved without new business rules
+- **D2 costing** – latest purchase cost snapshotted per sale; no FIFO/LIFO (§31, §33 forbid advanced costing; §31 forbids overwriting historical cost).
+- **D7 menu language** – the native menu exists only in development builds; the packaged app has none, and all UI text is localized (§8).
+
+## 89. Draft cart recovery (new, supports §23, §69, §77)
+An unfinished cart is saved locally (product ids, quantities, weight final price only – no prices, customer or payment data). After an unexpected restart the cashier is offered **Restore / Discard**; a draft is clearly labelled "not an invoice". Restoring re-prices from the current price list and uses the exchange rate current at completion. Each draft carries the sale's idempotency key, so a draft whose sale already committed is discarded and a draft can never be sold twice. Items that are no longer sellable are dropped and reported.
+
+## 90. Still open — NEEDS OWNER APPROVAL
+- D4: returned goods are restocked (§37 "inventory updated appropriately"); damaged returns must be recorded as waste afterwards.
+- D6 / §85.4: LBP change rounded up.
+- Report category names are not snapshotted per sale.
